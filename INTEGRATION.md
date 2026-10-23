@@ -2,7 +2,7 @@
 
 The original React screens, component styling, logo, maps and navigation are retained. Frontend actions now use authenticated FastAPI requests. Demo storage is available only with an explicit `VITE_USE_BACKEND=false`; live mode never silently falls back to sample records.
 
-## Responsibilities
+## Responsibilities//
 
 | Layer | Files | Responsibility |
 | --- | --- | --- |
