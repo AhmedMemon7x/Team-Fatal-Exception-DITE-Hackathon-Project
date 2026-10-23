@@ -209,7 +209,7 @@ export default function AuthScreen(vm) {
             </form>
           )}
 
-          {!forgot && !signup && (
+            {!forgot && !signup && vm.judgeDemoAccounts.length > 0 && (
             <section className={`judge-demo ${demoOpen ? 'is-open' : ''}`} aria-labelledby="judge-demo-title">
               <button type="button" className="judge-demo-toggle" aria-expanded={demoOpen}
                 aria-controls="judge-demo-options" onClick={() => setDemoOpen(open => !open)}>

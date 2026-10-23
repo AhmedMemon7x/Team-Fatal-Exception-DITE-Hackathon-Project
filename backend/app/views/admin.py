@@ -71,3 +71,13 @@ def audit_list(
     db=Depends(get_db),
 ):
     return viewmodel.audit_list(limit=limit, offset=offset, user=user, db=db)
+
+
+@router.get("/security")
+def security_overview(user=Depends(admin), db=Depends(get_db)):
+    return viewmodel.security_overview(user=user, db=db)
+
+
+@router.post("/security/sessions/{id}/revoke")
+def revoke_session(id: str, user=Depends(admin), db=Depends(get_db)):
+    return viewmodel.revoke_session(id=id, user=user, db=db)

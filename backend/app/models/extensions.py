@@ -24,7 +24,7 @@ DEFAULTS = {
     "student": [],
     "staff": [],
     "support": ["tests", "complaints", "maintenance", "reports"],
-    "manager": ["reports"],
+    "manager": ["complaints", "reports"],
     "admin": ["tests", "complaints", "maintenance", "locations", "reports"],
 }
 

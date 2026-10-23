@@ -18,7 +18,12 @@ def main():
     with SessionLocal() as db:
         if not db.get(Campus, args.campus_id):
             raise SystemExit("Campus not found")
-        for name, role in [("student", "student"), ("it", "support"), ("manager", "manager")]:
+        for name, role in [
+            ("student", "student"),
+            ("it", "support"),
+            ("manager", "manager"),
+            ("admin", "admin"),
+        ]:
             email = name + "@demo.campus"
             if db.scalar(select(User).where(User.email == email)):
                 print("Skipped existing account", email)
@@ -26,7 +31,7 @@ def main():
             password = secrets.token_urlsafe(16)
             db.add(
                 User(
-                    name="Demo " + name,
+                    name="Demo " + {"it": "IT Support", "admin": "Administrator"}.get(name, name.title()),
                     email=email,
                     role=role,
                     campus_id=args.campus_id,
@@ -35,7 +40,7 @@ def main():
             )
             print(email, "role=" + role, "password=" + password)
         db.commit()
-        print("Demo accounts only. Replace campus locations before real monitoring.")
+        print("Demo accounts only. They are disabled in production. Replace demo campus data before real monitoring.")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,15 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, model_validator, SecretStr
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Resolve the local secrets file relative to this backend package, not the
+    # process working directory. Explicit process environment values (Railway)
+    # continue to take precedence over this local development file.
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parent.parent / ".env", extra="ignore"
+    )
     environment: str = "development"
     database_url: str = "sqlite:///./campus.db"
     secret_key: str = "development-only-change-this-secret-key-before-deploying"
@@ -23,7 +29,7 @@ class Settings(BaseSettings):
     max_concurrent_transfers: int = 8
     worker_interval_seconds: int = 30
     gemini_api_key: SecretStr = SecretStr("")
-    gemini_model: str = "gemini-3.8-flash"
+    gemini_model: str = "gemini-3.5-flash-lite"
     gemini_timeout_seconds: int = Field(15, ge=3, le=25)
 
     @model_validator(mode="after")

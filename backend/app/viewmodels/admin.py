@@ -1,7 +1,7 @@
 from ..errors import DomainError as HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from .. import schemas as S
-from ..models import Campus, Building, Location, User, Endpoint, Threshold, Audit, LoginSession
+from ..models import Campus, Building, Location, User, Endpoint, Threshold, Audit, LoginSession, now
 from ..common import get, campus_check, location_check, serialize, page, audit
 from ..models.network import thresholds
 from ..security import passwords
@@ -116,3 +116,79 @@ class AdminViewModel:
             .order_by(Audit.created_at.desc())
         )
         return page(db, q, limit, offset)
+
+    @staticmethod
+    def security_overview(user=None, db=None):
+        active_users = db.scalar(
+            select(func.count()).select_from(User).where(
+                User.campus_id == user.campus_id, User.is_active.is_(True)
+            )
+        ) or 0
+        active_session_query = (
+            select(LoginSession, User)
+            .join(User, User.id == LoginSession.user_id)
+            .where(
+                User.campus_id == user.campus_id,
+                LoginSession.revoked.is_(False),
+                LoginSession.expires_at > now(),
+            )
+            .order_by(LoginSession.created_at.desc())
+        )
+        session_rows = db.execute(active_session_query.limit(200)).all()
+        active_sessions = db.scalar(
+            select(func.count())
+            .select_from(LoginSession)
+            .join(User, User.id == LoginSession.user_id)
+            .where(
+                User.campus_id == user.campus_id,
+                LoginSession.revoked.is_(False),
+                LoginSession.expires_at > now(),
+            )
+        ) or 0
+        sessions = []
+        for session, account in session_rows:
+            item = serialize(session)
+            item.update({"user_name": account.name, "email": account.email, "role": account.role})
+            sessions.append(item)
+
+        security_actions = (
+            "user.login",
+            "user.logout",
+            "user.registered",
+            "user.created",
+            "user.updated",
+            "auth.session_revoked",
+        )
+        event_rows = db.execute(
+            select(Audit, User)
+            .join(User, User.id == Audit.actor_id)
+            .where(User.campus_id == user.campus_id, Audit.action.in_(security_actions))
+            .order_by(Audit.created_at.desc())
+            .limit(50)
+        ).all()
+        events = []
+        for event, actor in event_rows:
+            item = serialize(event)
+            item["actor_name"] = actor.name
+            item["actor_email"] = actor.email
+            events.append(item)
+
+        return {
+            "active_users": active_users,
+            "active_sessions": active_sessions,
+            "sessions": sessions,
+            "events": events,
+        }
+
+    @staticmethod
+    def revoke_session(id: str, user=None, db=None):
+        session = get(db, LoginSession, id)
+        account = get(db, User, session.user_id)
+        campus_check(user, account.campus_id)
+        if account.id == user.id:
+            raise HTTPException(409, "You cannot revoke your own administrator session")
+        if session.revoked or session.expires_at <= now():
+            raise HTTPException(409, "This session is no longer active")
+        session.revoked = True
+        audit(db, user, "auth.session_revoked", session, {"target_user_id": account.id})
+        return {"revoked": True, "session_id": session.id}

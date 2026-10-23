@@ -170,11 +170,15 @@ class ComplaintsViewModel:
 
     @staticmethod
     def assign(id: str, data: S.Assignment, user=None, db=None):
+        if user.role == "support":
+            raise HTTPException(403, "Only managers can assign complaints to IT staff")
         c = db.scalar(select(Complaint).where(Complaint.id == id).with_for_update())
         if not c:
             raise HTTPException(404, "Complaint not found")
         complaint_access(db, user, c)
-        support_check(db, user, data.assignee_id)
+        assignee = support_check(db, user, data.assignee_id)
+        if assignee.role != "support":
+            raise HTTPException(422, "Complaints can only be assigned to active IT support staff")
         if c.status not in (
             "reviewed",
             "assigned",

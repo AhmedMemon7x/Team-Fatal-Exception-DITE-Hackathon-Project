@@ -359,7 +359,7 @@ class PolicyInput(BaseModel):
 def policy(role: str, data: PolicyInput, user=None, db=None):
     if user.role != "admin":
         raise DomainError(403, "Administrator access is required.")
-    valid = {"support": {"tests", "complaints", "maintenance", "reports"}, "manager": {"reports"}}
+    valid = {"support": {"tests", "complaints", "maintenance", "reports"}, "manager": {"complaints", "reports"}}
     if role not in valid or not set(data.permissions) <= valid[role]:
         raise DomainError(422, "Invalid role capabilities.")
     row = db.scalar(
@@ -415,6 +415,10 @@ def update_complaint(id, data, user=None, db=None):
     complaint_access(db, user, c)
     if data.status not in ("Open", "Assigned", "In Progress", "Resolved"):
         raise DomainError(422, "Invalid complaint status.")
+    if user.role == "manager" and (data.status != "Assigned" or not data.assignee_id):
+        raise DomainError(403, "Managers can assign complaints to IT staff; IT staff handle investigations.")
+    if user.role == "support" and data.assignee_id and data.assignee_id != c.assignee_id:
+        raise DomainError(403, "Only managers can assign complaints to IT staff.")
     vm = ComplaintsViewModel()
     if data.status == "Resolved":
         from ..common import support_check

@@ -37,13 +37,13 @@ Run each process in its own terminal, from the same project directory:
 
 Open http://localhost:8000/docs for interactive API documentation. Sign in through `POST /auth/login`; use the returned **access_token** in Swagger's **Authorize** box. Login accepts JSON with `email` and `password`. Swagger does not automatically sign you in.
 
-Optional student/support/manager demo accounts:
+Optional demo accounts for all four roles (student, IT support, manager and administrator):
 
 ```powershell
 .\.venv\Scripts\python.exe -m app.demo --campus-id YOUR_CAMPUS_ID
 ```
 
-This prints random demo passwords once; it refuses to run in production. For actual accounts use `POST /admin/users`; public registration always creates a student.
+This prints random demo passwords once; save the output because the passwords cannot be retrieved later. It refuses to run in production. For actual accounts use `POST /admin/users`; public registration always creates a student. The login screen hides the static judge-only demo credentials whenever the authenticated backend is enabled.
 
 ## Start on Linux/macOS
 

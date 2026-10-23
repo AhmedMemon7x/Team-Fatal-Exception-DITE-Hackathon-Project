@@ -25,6 +25,14 @@ Copy-Item .env.example .env
 
 Bootstrap prompts for an administrator password of at least 10 characters. It creates the campus, initial administrator, threshold configuration, measurement endpoint and optional placeholder locations. It never creates fake measurement history. Use Locations in the administrator dashboard to replace placeholder names and place actual campus pins. The map defaults to MUET, Jamshoro; its center is not a building survey.
 
+To create optional role-specific local demo accounts for all four roles, run this from the `backend` folder after bootstrap:
+
+```powershell
+.venv/Scripts/python.exe -m app.demo --campus-id YOUR_CAMPUS_ID
+```
+
+It prints randomly generated passwords once. Save them before closing the terminal. The command refuses to run with `ENVIRONMENT=production`; the static judge-only login panel is hidden whenever backend authentication is enabled.
+
 If upgrading an existing backend database, back it up, configure its `DATABASE_URL`, run `alembic upgrade head`, and sign in with existing accounts. Do not bootstrap a second campus unless intended.
 
 ## Run — separate terminals
@@ -53,6 +61,8 @@ npm run dev
 
 Open `http://127.0.0.1:5173`. The Vite development proxy forwards `/api` to port 8000 and `/measure` to port 8001. Sign in with the administrator created above. Students can create accounts through the existing sign-up page; administrators can then change their roles to IT Support or Manager in Users. If there is more than one campus, set `VITE_CAMPUS_ID` in the frontend `.env.local` to the campus ID printed by bootstrap and restart Vite.
 
+The API must be running before the login page can authenticate. If the browser shows `502 Bad Gateway` for `/api/auth/login`, start the API on port 8000 and check `http://127.0.0.1:8000/health/ready`. A working local setup needs the API, measurement service, worker and frontend processes above.
+
 Swagger API documentation is available at `http://127.0.0.1:8000/docs`. Initial endpoint health is deliberately unconfirmed. After testing endpoint reachability and capacity, an administrator can enable `operator_healthy` through `PATCH /admin/endpoints/{id}` in Swagger; this is required for reliable automatic incident detection.
 
 ## What is connected
@@ -64,6 +74,7 @@ Swagger API documentation is available at `http://127.0.0.1:8000/docs`. Initial 
 - Custom map locations and administrator pin/name editing.
 - Persistent maintenance notes, support activity and recurring-problem reporting.
 - Account roles, activation, role capabilities and versioned health thresholds.
+- Administrator Security Center with campus-scoped active sessions, session revocation and recent account security events.
 - Persistent user notifications, read state, error feedback and recorded analytics.
 
 See [INTEGRATION.md](INTEGRATION.md) for architecture, schema changes, validation and limitations.
@@ -90,9 +101,15 @@ The dashboard measures the device’s active internet connection directly agains
 
 The ZIP excludes dependencies, virtual environments, caches, credentials and databases. Install dependencies with the commands above.
 
+### Railway deployment
+
+The backend has a Railway config at `backend/railway.toml`. Create a Railway service from this repository and set its **Root Directory** to `/backend`; add a Railway PostgreSQL service and connect its `DATABASE_URL`. Railway builds the Python requirements, runs migrations, and starts the API, measurement endpoint and periodic rules together. Generate a public domain for the backend service and set `ENVIRONMENT=production`, a random `SECRET_KEY` of at least 32 characters, `CORS_ORIGINS` to a JSON array containing the deployed frontend origin, and `INITIAL_ADMIN_EMAIL` / `INITIAL_ADMIN_PASSWORD` for first-time initialization. The database is initialized only when empty; redeploys do not reset accounts. The deployment health check is `/health/ready`.
+
+Deploy the frontend separately (for example, Netlify) with `VITE_USE_BACKEND=true` and `VITE_API_URL` set to the Railway HTTPS domain without a trailing `/api`, then rebuild the frontend. Keep the local `.env` files and Railway secrets out of Git.
+
 ## Administrator AI features
 
-Set `GEMINI_API_KEY` in the private `backend/.env` file, then restart the API. The delivery contains only an empty example setting. The key must never be placed in frontend variables. `GEMINI_MODEL` defaults to `gemini-3.8-flash`; use a generateContent model available to your Google project. Provider requests have a bounded timeout.
+Set `GEMINI_API_KEY` in the private `backend/.env` file, then restart the API. The delivery contains only an empty example setting. The key must never be placed in frontend variables. `GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`, Google's lower-cost, high-throughput Flash-Lite model; use a generateContent model available to your Google project. Provider requests have a bounded timeout. The backend resolves `backend/.env` relative to its own files, and process environment variables (including Railway variables) take precedence.
 
 New complaints are classified automatically into slow internet, high latency, frequent disconnection, no internet, weak signal, service unavailable or other. Gemini suggestions with confidence at least 0.65 are applied automatically; lower-confidence suggestions remain reviewable. Administrators can classify older complaints individually, inspect the reasoning, and apply a suggested category. The original submitted category and analysis are audited, and retries do not trigger duplicate analysis.
 

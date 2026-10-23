@@ -19,7 +19,7 @@ export const seed: CampusState = {
  complaints:[
  {id:'SC-1042',locationId:'HOS-A',category:'No Internet',description:'The connection drops repeatedly in the hostel common room. Several students are affected.',status:'Open',assignee:'Unassigned',createdAt:'2026-10-01T04:50:00Z',owner:'student-demo',notes:[]},
  {id:'SC-1041',locationId:'CAF-01',category:'Slow Internet',description:'Pages are taking a long time to load during lunch.',status:'In Progress',assignee:'Sarah Khan',createdAt:'2026-10-01T03:45:00Z',owner:'student-demo',notes:['Checking access point utilization.']},
- {id:'SC-1040',locationId:'ENG-F3',category:'High Latency',description:'Video calls freeze in the design studio.',status:'Assigned',assignee:'Omar Ali',createdAt:'2026-09-30T08:30:00Z',owner:'other-demo',notes:[]},
+ {id:'SC-1040',locationId:'ENG-F3',category:'High Latency',description:'Video calls freeze in the design studio.',status:'Assigned',assignee:'Sarah Khan',createdAt:'2026-09-30T08:30:00Z',owner:'other-demo',notes:[]},
  {id:'SC-1039',locationId:'LIB-F2-01',category:'Disconnections',description:'Wi-Fi briefly disconnected this morning.',status:'Resolved',assignee:'Sarah Khan',createdAt:'2026-09-30T04:20:00Z',owner:'student-demo',notes:['Access point restarted; connection verified.']}],
  tests:[],
  users:[{id:'student-demo',name:'Alex Johnson',role:'Student',active:true},{id:'it-demo',name:'Sarah Khan',role:'IT Support',active:true},{id:'manager-demo',name:'Omar Ali',role:'Manager',active:true},{id:'admin-demo',name:'Ayesha Ahmed',role:'Administrator',active:true}],
