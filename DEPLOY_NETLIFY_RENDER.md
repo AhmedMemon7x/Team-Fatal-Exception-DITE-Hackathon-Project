@@ -53,6 +53,10 @@ embeds this value into the frontend bundle. Git-based build settings remain:
 - Build command: npm run build
 - Publish directory: dist
 
+The repository also includes `netlify.toml` for these settings and
+`public/_redirects` so Netlify serves the React app on direct navigation and
+page refreshes instead of returning its static-file 404 page.
+
 ### Optional public judge demo buttons
 
 Create disposable Student, Administrator, IT Support and Manager accounts in
