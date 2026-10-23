@@ -14,9 +14,6 @@
 /coverage
 
 # next.js
-/.next/
-/.vinext/
-/out/
 
 # misc
 .DS_Store
@@ -34,7 +31,6 @@ yarn-error.log*
 .vercel
 
 # typescript
-next-env.d.ts
 /dist/
 /.wrangler/
 # Checkout-local execution profile and tool state; never publish them.
