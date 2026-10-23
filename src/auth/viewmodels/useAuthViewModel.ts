@@ -52,14 +52,25 @@ export function useAuthViewModel(onAuthenticated) {
     }
   };
 
+  const signInDemo = async (account) => {
+    if (busy) return;
+    setBusy(true);
+    setErrors({});
+    setNotice('');
+    try {
+      const result = await authenticate({ email: account.email, password: account.password, remember: true }, 'login');
+      onAuthenticated({name:result.name,email:account.email,remember:true,user:result.user});
+    } catch(error) {
+      if(import.meta.env.DEV)console.error('Demo sign-in failed:',error.message);
+      setNotice(error.status===401?'This demo account could not sign in. Check its local setup.':error instanceof TypeError?'Unable to reach the campus server. Please try again.':typeof error.message==='string'?error.message:'Unable to sign in. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return {
     judgeDemoAccounts,
-    fillDemoAccount: (account) => {
-      if (busy) return;
-      setValues((current) => ({...current, email: account.email, password: account.password}));
-      setErrors({});
-      setNotice(`${account.role} demo details filled. Select Sign in to continue.`);
-    },
+    signInDemo,
     mode,
     values,
     errors,

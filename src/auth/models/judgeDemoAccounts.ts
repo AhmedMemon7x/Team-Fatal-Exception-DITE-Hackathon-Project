@@ -18,4 +18,6 @@ const mockAccounts = [
   { role: 'Manager', email: 'ali@muet.edu.pk', password: 'ahmed12345' },
 ] as const;
 
-export const judgeDemoAccounts = liveMode ? configuredBackendAccounts : mockAccounts;
+export const judgeDemoAccounts = import.meta.env.DEV
+  ? liveMode ? configuredBackendAccounts : mockAccounts
+  : [];

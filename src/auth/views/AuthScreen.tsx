@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState } from 'react';
-import { ArrowRight, ChevronDown, Check, GraduationCap, Headset, ChartNoAxesCombined, Eye, EyeOff, LockKeyhole, Mail, Radio, ShieldCheck, UserRound, Wifi, Zap } from 'lucide-react';
+import { ArrowRight, GraduationCap, Headset, ChartNoAxesCombined, Eye, EyeOff, LockKeyhole, Mail, Radio, ShieldCheck, UserRound, Wifi, Zap } from 'lucide-react';
 
 function Brand(){return <img className="auth-logo" src="/branding/campusnet-logo.png" alt="CampusNet — campus network monitoring"/>;}
 
@@ -20,9 +20,7 @@ function Field({ label, icon: Icon, error, trailing, ...props }) {
 
 export default function AuthScreen(vm) {
   const signup = vm.mode === 'signup';
-  const [demoOpen, setDemoOpen] = useState(false);
-  const [demoRole, setDemoRole] = useState('Student');
-  const selectedDemo = vm.judgeDemoAccounts.find(account => account.role === demoRole);
+  const [demoBusyRole, setDemoBusyRole] = useState('');
   const demoIcons = {Student: GraduationCap, Administrator: ShieldCheck, 'IT Staff': Headset, Manager: ChartNoAxesCombined};
   const demoDescriptions = {Student: 'Test and report', Administrator: 'Manage the campus', 'IT Staff': 'Investigate issues', Manager: 'Review insights'};
   const [forgot, setForgot] = useState(false);
@@ -210,34 +208,24 @@ export default function AuthScreen(vm) {
           )}
 
             {!forgot && !signup && vm.judgeDemoAccounts.length > 0 && (
-            <section className={`judge-demo ${demoOpen ? 'is-open' : ''}`} aria-labelledby="judge-demo-title">
-              <button type="button" className="judge-demo-toggle" aria-expanded={demoOpen}
-                aria-controls="judge-demo-options" onClick={() => setDemoOpen(open => !open)}>
+            <section className="judge-demo is-open" aria-labelledby="judge-demo-title">
+              <div className="judge-demo-heading">
                 <span className="judge-demo-emblem"><ShieldCheck size={19} aria-hidden="true" /></span>
-                <span className="judge-demo-intro"><span id="judge-demo-title">Explore the demo <span className="judge-demo-tag">FOR JUDGES</span></span><span>Four roles. One connected campus.</span></span>
-                <ChevronDown className="judge-demo-chevron" size={17} aria-hidden="true" />
-              </button>
-              {demoOpen && <div id="judge-demo-options" className="judge-demo-options">
-                <p className="judge-demo-hint">Select a role to fill your sign-in details.</p>
+                <span className="judge-demo-intro"><span id="judge-demo-title">Quick demo access <span className="judge-demo-tag">FOR JUDGES</span></span><span>Choose a role to open its workspace.</span></span>
+              </div>
+              <div id="judge-demo-options" className="judge-demo-options">
                 <div className="judge-demo-roles" role="group" aria-label="Choose a demo role">
                   {vm.judgeDemoAccounts.map(account => {
                     const Icon = demoIcons[account.role];
-                    const selected = account.role === demoRole;
-                    return <button key={account.role} type="button" className={`judge-role ${selected ? 'is-selected' : ''}`}
-                      aria-pressed={selected} disabled={vm.busy}
-                      onClick={() => {setDemoRole(account.role); vm.fillDemoAccount(account);}}>
+                    return <button key={account.role} type="button" className="judge-role"
+                      disabled={vm.busy} onClick={async () => {setDemoBusyRole(account.role); await vm.signInDemo(account); setDemoBusyRole('');}}>
                       <Icon size={18} aria-hidden="true" />
                       <span><strong>{account.role}</strong><small>{demoDescriptions[account.role]}</small></span>
-                      <span className="judge-role-check">{selected && <Check size={11} aria-hidden="true" />}</span>
+                      <span className="judge-role-action">{demoBusyRole === account.role ? 'Opening…' : 'Open'}</span>
                     </button>;
                   })}
                 </div>
-                <div className="judge-demo-preview" aria-live="polite" aria-atomic="true">
-                  <div><span>Email</span><code>{selectedDemo.email}</code></div>
-                  <div><span>Password</span><code>{selectedDemo.password}</code></div>
-                </div>
-                <p className="judge-demo-caption">Use the Sign in button above to enter the selected workspace.</p>
-              </div>}
+              </div>
             </section>
           )}
 
