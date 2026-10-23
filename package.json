@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite --config vite.frontend.config.ts",
     "build": "tsc --noEmit -p tsconfig.frontend.json && vite build --config vite.frontend.config.ts",
+    "build:deployment": "tsc --noEmit -p tsconfig.frontend.json && vite build --config vite.frontend.config.ts --mode deployment",
     "preview": "vite preview --config vite.frontend.config.ts",
     "test": "node --test tests/*.test.mjs"
   },

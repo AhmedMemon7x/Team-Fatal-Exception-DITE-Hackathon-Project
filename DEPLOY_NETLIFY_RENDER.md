@@ -53,6 +53,29 @@ embeds this value into the frontend bundle. Git-based build settings remain:
 - Build command: npm run build
 - Publish directory: dist
 
+### Optional public judge demo buttons
+
+Create disposable Student, Administrator, IT Support and Manager accounts in
+the hosted backend first. Then add these variables to Netlify's Production build
+environment, using each account's actual email and password:
+
+VITE_SHOW_DEMO_ACCOUNTS=true
+VITE_DEMO_STUDENT_EMAIL=...
+VITE_DEMO_STUDENT_PASSWORD=...
+VITE_DEMO_ADMIN_EMAIL=...
+VITE_DEMO_ADMIN_PASSWORD=...
+VITE_DEMO_IT_EMAIL=...
+VITE_DEMO_IT_PASSWORD=...
+VITE_DEMO_MANAGER_EMAIL=...
+VITE_DEMO_MANAGER_PASSWORD=...
+
+These are public demo credentials: Vite embeds `VITE_` values in browser code.
+Use accounts made only for judges, and rebuild the frontend after setting them.
+The login page shows the one-click role buttons only when the flag is enabled
+and each role has both values configured. For a local production-mode build,
+copy `.env.deployment.example` to `.env.deployment.local`, replace its
+placeholders and run `npm run build:deployment`.
+
 Open the Netlify site and sign in with the administrator email/password entered
 in Render. Add real campus buildings and map locations in Administration.
 Students can then register and use those locations. Your computer is no longer
@@ -79,6 +102,10 @@ Without Gemini, the implemented AI tools show their labelled fallbacks.
   credentials stop initialization with a safe error. Correct them and redeploy.
 - If the browser still requests the Netlify /api URL, the frontend was not rebuilt
   with VITE_API_URL. Trigger a fresh Netlify build and reload the page.
+- If `/api/auth/login` returns 502, check the frontend build's `VITE_API_URL`.
+  The separate frontend must use the backend's exact HTTPS origin, without `/api`,
+  then be rebuilt. Open the backend URL plus `/health/ready`; if that is not ready,
+  inspect the backend service status, database connection and startup logs.
 - The separate measurement transport is hosted under /probe/measure on the same
   Render service. Dashboard internet tests continue to use Cloudflare directly.
 

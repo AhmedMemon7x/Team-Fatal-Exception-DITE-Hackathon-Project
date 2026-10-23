@@ -1,8 +1,10 @@
-// Backend demo credentials are injected from an ignored, development-only env file.
-// They are shown in the local judge panel and are not included in production builds.
+// Demo credentials are public when placed in a VITE_ variable and end up in the
+// browser bundle. Only use disposable judge accounts when enabling production access.
 import { liveMode } from '../../services/backendClient';
 
-const configuredBackendAccounts = import.meta.env.DEV ? [
+const demoAccessEnabled = import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true';
+
+const configuredBackendAccounts = demoAccessEnabled ? [
   { role: 'Student', email: import.meta.env.VITE_DEMO_STUDENT_EMAIL, password: import.meta.env.VITE_DEMO_STUDENT_PASSWORD },
   { role: 'Administrator', email: import.meta.env.VITE_DEMO_ADMIN_EMAIL, password: import.meta.env.VITE_DEMO_ADMIN_PASSWORD },
   { role: 'IT Staff', email: import.meta.env.VITE_DEMO_IT_EMAIL, password: import.meta.env.VITE_DEMO_IT_PASSWORD },
@@ -20,4 +22,4 @@ const mockAccounts = [
 
 export const judgeDemoAccounts = import.meta.env.DEV
   ? liveMode ? configuredBackendAccounts : mockAccounts
-  : [];
+  : liveMode ? configuredBackendAccounts : [];
